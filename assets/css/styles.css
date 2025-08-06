@@ -1175,6 +1175,10 @@ sponsive Design */
         grid-template-columns: 1fr;
         gap: 2rem;
     }
+    
+    .hero-image {
+        display: none;
+    }
 
     .hero-buttons {
         justify-content: center;
