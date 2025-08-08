@@ -210,6 +210,8 @@ function initContactForm() {
 function initGallery() {
     // CONFIGURACIÓN PRINCIPAL
     const TOTAL_IMAGES = 18; // Número total de imágenes en la carpeta galeria
+    const TOTAL_VIDEOS = 4; // Número total de videos en la carpeta galeria/videos
+    const TOTAL_ITEMS = TOTAL_IMAGES + TOTAL_VIDEOS; // Total de elementos (imágenes + videos)
     const AUTO_ADVANCE_INTERVAL = 4000; // Tiempo para avance automático (4 segundos)
     
     // Elementos DOM principales
@@ -230,9 +232,33 @@ function initGallery() {
     let currentCarouselIndex = 0;
     let currentModalIndex = 0;
     let imagesPerView = getImagesPerView();
-    let totalSlides = Math.ceil(TOTAL_IMAGES / imagesPerView);
+    let totalSlides = Math.ceil(TOTAL_ITEMS / imagesPerView);
     let autoAdvanceTimer = null;
     let isUserInteracting = false;
+    
+    // Crear array con todos los elementos (imágenes + videos)
+    const galleryItems = [];
+    
+    // Agregar imágenes
+    for (let i = 1; i <= TOTAL_IMAGES; i++) {
+        galleryItems.push({
+            type: 'image',
+            src: `assets/img/galeria/${i}.jpg`,
+            alt: `Proyecto veterinario ${i}`,
+            index: i - 1
+        });
+    }
+    
+    // Agregar videos
+    for (let i = 1; i <= TOTAL_VIDEOS; i++) {
+        galleryItems.push({
+            type: 'video',
+            src: `assets/img/galeria/videos/${i}.mp4`,
+            poster: `assets/img/galeria/videos/${i}.jpg`, // Thumbnail del video (opcional)
+            alt: `Video proyecto veterinario ${i}`,
+            index: TOTAL_IMAGES + i - 1
+        });
+    }
     
     /**
      * Determina cuántas imágenes mostrar según el tamaño de pantalla
@@ -247,26 +273,41 @@ function initGallery() {
     }
 
     /**
-     * Genera dinámicamente las imágenes para el slide actual
+     * Genera dinámicamente los elementos para el slide actual (imágenes y videos)
      */
     function generateGalleryImages() {
         galleryContainer.innerHTML = '';
         
         const startIndex = currentCarouselIndex * imagesPerView;
-        const endIndex = Math.min(startIndex + imagesPerView, TOTAL_IMAGES);
+        const endIndex = Math.min(startIndex + imagesPerView, TOTAL_ITEMS);
         
         for (let i = startIndex; i < endIndex; i++) {
-            const imageNumber = i + 1;
+            const item = galleryItems[i];
             const galleryItem = document.createElement('div');
             galleryItem.className = 'gallery-item';
-            galleryItem.innerHTML = `
-                <img src="assets/img/galeria/${imageNumber}.jpg" alt="Proyecto veterinario ${imageNumber}" loading="lazy">
-                <div class="gallery-overlay">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                    </svg>
-                </div>
-            `;
+            
+            if (item.type === 'image') {
+                galleryItem.innerHTML = `
+                    <img src="${item.src}" alt="${item.alt}" loading="lazy">
+                    <div class="gallery-overlay">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                    </div>
+                `;
+            } else if (item.type === 'video') {
+                galleryItem.innerHTML = `
+                    <video preload="metadata" muted>
+                        <source src="${item.src}" type="video/mp4">
+                    </video>
+                    <div class="gallery-overlay video-overlay">
+                        <svg viewBox="0 0 24 24" fill="currentColor" class="play-icon">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </div>
+                `;
+                galleryItem.classList.add('video-item');
+            }
             
             galleryItem.addEventListener('click', () => {
                 openModal(i);
@@ -365,14 +406,57 @@ function initGallery() {
     }
 
     /**
-     * Abre el modal con una imagen específica
+     * Abre el modal con un elemento específico (imagen o video)
      */
-    function openModal(imageIndex) {
-        if (!modal || !modalImg) return;
+    function openModal(itemIndex) {
+        if (!modal) return;
         
-        currentModalIndex = imageIndex;
-        modalImg.src = `assets/img/galeria/${imageIndex + 1}.jpg`;
-        modalImg.alt = `Proyecto veterinario ${imageIndex + 1}`;
+        currentModalIndex = itemIndex;
+        const item = galleryItems[itemIndex];
+        
+        // Limpiar contenido anterior del modal
+        const modalContent = modal.querySelector('.modal-content');
+        const existingMedia = modalContent.querySelector('#modalImage, #modalVideo');
+        if (existingMedia) {
+            existingMedia.remove();
+        }
+        
+        if (item.type === 'image') {
+            const img = document.createElement('img');
+            img.id = 'modalImage';
+            img.src = item.src;
+            img.alt = item.alt;
+            img.style.cssText = `
+                max-width: 70vw;
+                max-height: 70vh;
+                width: auto;
+                height: auto;
+                object-fit: contain;
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow-medium);
+                display: block;
+            `;
+            modalContent.insertBefore(img, modalContent.querySelector('.modal-nav'));
+        } else if (item.type === 'video') {
+            const video = document.createElement('video');
+            video.id = 'modalVideo';
+            video.controls = true;
+            video.autoplay = true;
+            video.muted = false;
+            video.innerHTML = `<source src="${item.src}" type="video/mp4">`;
+            video.style.cssText = `
+                max-width: 70vw;
+                max-height: 70vh;
+                width: auto;
+                height: auto;
+                object-fit: contain;
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow-medium);
+                display: block;
+            `;
+            modalContent.insertBefore(video, modalContent.querySelector('.modal-nav'));
+        }
+        
         modal.classList.add('active');
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -390,25 +474,19 @@ function initGallery() {
     }
     
     /**
-     * Navega a la siguiente imagen en el modal
+     * Navega al siguiente elemento en el modal
      */
     function nextModalImage() {
-        if (!modalImg) return;
-        
-        currentModalIndex = (currentModalIndex + 1) % TOTAL_IMAGES;
-        modalImg.src = `assets/img/galeria/${currentModalIndex + 1}.jpg`;
-        modalImg.alt = `Proyecto veterinario ${currentModalIndex + 1}`;
+        currentModalIndex = (currentModalIndex + 1) % TOTAL_ITEMS;
+        openModal(currentModalIndex);
     }
     
     /**
-     * Navega a la imagen anterior en el modal
+     * Navega al elemento anterior en el modal
      */
     function prevModalImage() {
-        if (!modalImg) return;
-        
-        currentModalIndex = (currentModalIndex - 1 + TOTAL_IMAGES) % TOTAL_IMAGES;
-        modalImg.src = `assets/img/galeria/${currentModalIndex + 1}.jpg`;
-        modalImg.alt = `Proyecto veterinario ${currentModalIndex + 1}`;
+        currentModalIndex = (currentModalIndex - 1 + TOTAL_ITEMS) % TOTAL_ITEMS;
+        openModal(currentModalIndex);
     }
     
     // EVENT LISTENERS DEL CARRUSEL
