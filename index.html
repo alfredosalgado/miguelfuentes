@@ -48,6 +48,9 @@
                             <a href="#testimonios" class="nav-link">Testimonios</a>
                         </li>
                         <li class="nav-item">
+                            <a href="#galeria" class="nav-link">Galería</a>
+                        </li>
+                        <li class="nav-item">
                             <a href="#contacto" class="nav-link">Contacto</a>
                         </li>
                     </ul>
@@ -385,6 +388,60 @@
                 </div>
             </div>
         </section>
+
+        <!-- Gallery Section -->
+        <section id="galeria" class="gallery" role="region" aria-labelledby="gallery-heading">
+            <div class="container">
+                <div class="section-header">
+                    <h2 id="gallery-heading" class="section-title">Galería de Trabajos</h2>
+                    <p class="section-description">Algunos de nuestros proyectos veterinarios realizados</p>
+                </div>
+                
+                <div class="gallery-carousel">
+                    <div class="gallery-container" id="galleryContainer">
+                        <!-- Las imágenes se cargarán dinámicamente con JavaScript -->
+                    </div>
+                    
+                    <div class="gallery-controls">
+                        <button class="gallery-btn gallery-prev" id="galleryPrev" aria-label="Imagen anterior">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                            </svg>
+                        </button>
+                        <button class="gallery-btn gallery-next" id="galleryNext" aria-label="Siguiente imagen">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="gallery-indicators" id="galleryIndicators">
+                        <!-- Los indicadores se generarán dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gallery Modal -->
+        <div id="galleryModal" class="gallery-modal">
+            <div class="modal-content">
+                <span class="modal-close" id="modalClose">&times;</span>
+                <img id="modalImage" src="" alt="">
+                <div class="modal-nav">
+                    <button class="modal-btn modal-prev" id="modalPrev" aria-label="Imagen anterior">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                        </svg>
+                    </button>
+                    <button class="modal-btn modal-next" id="modalNext" aria-label="Siguiente imagen">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Contact Section -->
         <section id="contacto" class="contact">
             <div class="container">

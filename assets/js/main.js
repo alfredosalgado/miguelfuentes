@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initSmoothScrolling();
     initAnimations();
     initContactForm();
+    initGallery();
 });
 
 // Navigation functionality
@@ -202,6 +203,317 @@ function initContactForm() {
             console.log('Email link clicked:', this.href);
         });
     });
+}
+
+// Gallery functionality
+function initGallery() {
+    // CONFIGURACIÓN PRINCIPAL
+    const TOTAL_IMAGES = 18; // Número total de imágenes en la carpeta galeria
+    const AUTO_ADVANCE_INTERVAL = 4000; // Tiempo para avance automático (4 segundos)
+    
+    // Elementos DOM principales
+    const galleryContainer = document.querySelector('.gallery-container');
+    const modal = document.getElementById('galleryModal');
+    const modalImg = document.getElementById('modalImage');
+    const closeModal = document.querySelector('.modal-close');
+    const prevModalBtn = document.querySelector('.modal-prev');
+    const nextModalBtn = document.querySelector('.modal-next');
+    const prevCarouselBtn = document.querySelector('.gallery-prev');
+    const nextCarouselBtn = document.querySelector('.gallery-next');
+    const indicators = document.querySelector('.gallery-indicators');
+    
+    // Verificar si los elementos existen
+    if (!galleryContainer) return;
+    
+    // Variables de estado
+    let currentCarouselIndex = 0;
+    let currentModalIndex = 0;
+    let imagesPerView = getImagesPerView();
+    let totalSlides = Math.ceil(TOTAL_IMAGES / imagesPerView);
+    let autoAdvanceTimer = null;
+    let isUserInteracting = false;
+    
+    /**
+     * Determina cuántas imágenes mostrar según el tamaño de pantalla
+     */
+    function getImagesPerView() {
+        const width = window.innerWidth;
+        if (width >= 768) {
+            return 4; // PC/Desktop - mostrar 4 imágenes
+        } else {
+            return 2; // Mobile - mostrar 2 imágenes
+        }
+    }
+
+    /**
+     * Genera dinámicamente las imágenes para el slide actual
+     */
+    function generateGalleryImages() {
+        galleryContainer.innerHTML = '';
+        
+        const startIndex = currentCarouselIndex * imagesPerView;
+        const endIndex = Math.min(startIndex + imagesPerView, TOTAL_IMAGES);
+        
+        for (let i = startIndex; i < endIndex; i++) {
+            const imageNumber = i + 1;
+            const galleryItem = document.createElement('div');
+            galleryItem.className = 'gallery-item';
+            galleryItem.innerHTML = `
+                <img src="assets/img/galeria/${imageNumber}.jpg" alt="Proyecto veterinario ${imageNumber}" loading="lazy">
+                <div class="gallery-overlay">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                </div>
+            `;
+            
+            galleryItem.addEventListener('click', () => {
+                openModal(i);
+            });
+            
+            galleryContainer.appendChild(galleryItem);
+        }
+    }
+    
+    /**
+     * Genera los indicadores del carrusel
+     */
+    function generateIndicators() {
+        if (!indicators) return;
+        
+        indicators.innerHTML = '';
+        for (let i = 0; i < totalSlides; i++) {
+            const indicator = document.createElement('span');
+            indicator.className = 'gallery-indicator';
+            if (i === 0) indicator.classList.add('active');
+            indicators.appendChild(indicator);
+        }
+        attachIndicatorListeners();
+    }
+
+    /**
+     * Actualiza la vista del carrusel
+     */
+    function updateCarousel() {
+        generateGalleryImages();
+        
+        const allIndicators = document.querySelectorAll('.gallery-indicator');
+        allIndicators.forEach((indicator, index) => {
+            indicator.classList.toggle('active', index === currentCarouselIndex);
+        });
+    }
+    
+    /**
+     * Navega a un slide específico
+     */
+    function goToSlide(index) {
+        currentCarouselIndex = index;
+        updateCarousel();
+    }
+    
+    /**
+     * Inicia el avance automático del carrusel
+     */
+    function startAutoAdvance() {
+        if (autoAdvanceTimer) {
+            clearInterval(autoAdvanceTimer);
+        }
+        autoAdvanceTimer = setInterval(() => {
+            if (!isUserInteracting && totalSlides > 1) {
+                nextSlide();
+            }
+        }, AUTO_ADVANCE_INTERVAL);
+    }
+    
+    /**
+     * Detiene el avance automático
+     */
+    function stopAutoAdvance() {
+        if (autoAdvanceTimer) {
+            clearInterval(autoAdvanceTimer);
+            autoAdvanceTimer = null;
+        }
+    }
+    
+    /**
+     * Reinicia el avance automático después de interacción
+     */
+    function resetAutoAdvance() {
+        stopAutoAdvance();
+        setTimeout(() => {
+            if (!isUserInteracting) {
+                startAutoAdvance();
+            }
+        }, 1000);
+    }
+    
+    /**
+     * Avanza al siguiente slide
+     */
+    function nextSlide() {
+        currentCarouselIndex = (currentCarouselIndex + 1) % totalSlides;
+        updateCarousel();
+    }
+    
+    /**
+     * Retrocede al slide anterior
+     */
+    function prevSlide() {
+        currentCarouselIndex = (currentCarouselIndex - 1 + totalSlides) % totalSlides;
+        updateCarousel();
+    }
+
+    /**
+     * Abre el modal con una imagen específica
+     */
+    function openModal(imageIndex) {
+        if (!modal || !modalImg) return;
+        
+        currentModalIndex = imageIndex;
+        modalImg.src = `assets/img/galeria/${imageIndex + 1}.jpg`;
+        modalImg.alt = `Proyecto veterinario ${imageIndex + 1}`;
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    /**
+     * Cierra el modal
+     */
+    function closeModalFunc() {
+        if (!modal) return;
+        
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+    
+    /**
+     * Navega a la siguiente imagen en el modal
+     */
+    function nextModalImage() {
+        if (!modalImg) return;
+        
+        currentModalIndex = (currentModalIndex + 1) % TOTAL_IMAGES;
+        modalImg.src = `assets/img/galeria/${currentModalIndex + 1}.jpg`;
+        modalImg.alt = `Proyecto veterinario ${currentModalIndex + 1}`;
+    }
+    
+    /**
+     * Navega a la imagen anterior en el modal
+     */
+    function prevModalImage() {
+        if (!modalImg) return;
+        
+        currentModalIndex = (currentModalIndex - 1 + TOTAL_IMAGES) % TOTAL_IMAGES;
+        modalImg.src = `assets/img/galeria/${currentModalIndex + 1}.jpg`;
+        modalImg.alt = `Proyecto veterinario ${currentModalIndex + 1}`;
+    }
+    
+    // EVENT LISTENERS DEL CARRUSEL
+    if (nextCarouselBtn) {
+        nextCarouselBtn.addEventListener('click', () => {
+            isUserInteracting = true;
+            nextSlide();
+            resetAutoAdvance();
+            setTimeout(() => { isUserInteracting = false; }, 500);
+        });
+    }
+    
+    if (prevCarouselBtn) {
+        prevCarouselBtn.addEventListener('click', () => {
+            isUserInteracting = true;
+            prevSlide();
+            resetAutoAdvance();
+            setTimeout(() => { isUserInteracting = false; }, 500);
+        });
+    }
+    
+    /**
+     * Asigna eventos a los indicadores
+     */
+    function attachIndicatorListeners() {
+        const allIndicators = document.querySelectorAll('.gallery-indicator');
+        allIndicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                isUserInteracting = true;
+                goToSlide(index);
+                resetAutoAdvance();
+                setTimeout(() => { isUserInteracting = false; }, 500);
+            });
+        });
+    }
+
+    // EVENT LISTENERS DEL MODAL
+    if (closeModal) {
+        closeModal.addEventListener('click', closeModalFunc);
+    }
+    
+    if (nextModalBtn) {
+        nextModalBtn.addEventListener('click', nextModalImage);
+    }
+    
+    if (prevModalBtn) {
+        prevModalBtn.addEventListener('click', prevModalImage);
+    }
+    
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModalFunc();
+            }
+        });
+    }
+    
+    // NAVEGACIÓN CON TECLADO
+    document.addEventListener('keydown', (e) => {
+        if (modal && modal.style.display === 'flex') {
+            if (e.key === 'Escape') {
+                closeModalFunc();
+            } else if (e.key === 'ArrowRight') {
+                nextModalImage();
+            } else if (e.key === 'ArrowLeft') {
+                prevModalImage();
+            }
+        }
+    });
+    
+    // MANEJO DE CAMBIOS DE TAMAÑO DE VENTANA
+    function handleResize() {
+        const newImagesPerView = getImagesPerView();
+        if (newImagesPerView !== imagesPerView) {
+            imagesPerView = newImagesPerView;
+            totalSlides = Math.ceil(TOTAL_IMAGES / imagesPerView);
+            if (currentCarouselIndex >= totalSlides) {
+                currentCarouselIndex = totalSlides - 1;
+            }
+            generateIndicators();
+            updateCarousel();
+        }
+    }
+    
+    window.addEventListener('resize', debounce(handleResize, 250));
+    
+    // CONTROL DE AUTO-AVANCE EN HOVER
+    if (galleryContainer) {
+        galleryContainer.addEventListener('mouseenter', () => {
+            isUserInteracting = true;
+            stopAutoAdvance();
+        });
+        
+        galleryContainer.addEventListener('mouseleave', () => {
+            isUserInteracting = false;
+            startAutoAdvance();
+        });
+    }
+    
+    // INICIALIZACIÓN
+    generateIndicators();
+    updateCarousel();
+    
+    if (totalSlides > 1) {
+        startAutoAdvance();
+    }
 }
 
 // Utility functions
