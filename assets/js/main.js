@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initAnimations();
     initContactForm();
     initGallery();
+    initFloatingButtons();
 });
 
 // Navigation functionality
@@ -513,6 +514,45 @@ function initGallery() {
     
     if (totalSlides > 1) {
         startAutoAdvance();
+    }
+}
+
+// Floating buttons functionality
+function initFloatingButtons() {
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    
+    if (!scrollTopBtn) return;
+    
+    // Show/hide scroll to top button based on scroll position
+    function toggleScrollTopButton() {
+        if (window.pageYOffset > 300) {
+            scrollTopBtn.classList.add('visible');
+        } else {
+            scrollTopBtn.classList.remove('visible');
+        }
+    }
+    
+    // Scroll to top functionality
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+    
+    // Event listeners
+    window.addEventListener('scroll', debounce(toggleScrollTopButton, 100));
+    scrollTopBtn.addEventListener('click', scrollToTop);
+    
+    // Initial check
+    toggleScrollTopButton();
+    
+    // WhatsApp button tracking (already handled in initContactForm)
+    const whatsappBtn = document.querySelector('.whatsapp-btn');
+    if (whatsappBtn) {
+        whatsappBtn.addEventListener('click', function() {
+            console.log('Floating WhatsApp button clicked');
+        });
     }
 }
 
