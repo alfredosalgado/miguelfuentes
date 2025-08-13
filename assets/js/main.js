@@ -209,8 +209,8 @@ function initContactForm() {
 // Gallery functionality
 function initGallery() {
     // CONFIGURACIÓN PRINCIPAL
-    const TOTAL_IMAGES = 18; // Número total de imágenes en la carpeta galeria
-    const TOTAL_VIDEOS = 4; // Número total de videos en la carpeta galeria/videos
+    const TOTAL_IMAGES = 21; // Número total de imágenes en la carpeta galeria
+    const TOTAL_VIDEOS = 5; // Número total de videos en la carpeta galeria/videos
     const TOTAL_ITEMS = TOTAL_IMAGES + TOTAL_VIDEOS; // Total de elementos (imágenes + videos)
     const AUTO_ADVANCE_INTERVAL = 4000; // Tiempo para avance automático (4 segundos)
     
